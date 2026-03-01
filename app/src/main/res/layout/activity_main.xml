@@ -5,71 +5,8 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/my_new_background"
     tools:context=".MainActivity">
-
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:fontFamily="@font/belleza"
-        android:gravity="center"
-        android:text="Daily Prescript"
-        android:textColor="#FFFDFD"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView6" />
-
-    <Button
-        android:id="@+id/btnreg4"
-        android:layout_width="280dp"
-        android:layout_height="58dp"
-        android:layout_marginStart="38dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="38dp"
-        android:layout_marginBottom="24dp"
-        android:backgroundTint="@color/button_color"
-        android:text="I have completed the prescript."
-        app:layout_constraintBottom_toTopOf="@+id/btngoogle"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.49"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView3" />
-
-    <TextView
-        android:id="@+id/textClock"
-        android:layout_width="330dp"
-        android:layout_height="90dp"
-        android:layout_marginStart="80dp"
-        android:layout_marginEnd="80dp"
-        android:fontFamily="@font/belleza"
-        android:gravity="center"
-        android:textColor="#FFFFFF"
-        android:textSize="60sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="218dp"
-        tools:text="24 : 00 : 00" />
-
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="349dp"
-        android:layout_height="117dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="16dp"
-        android:fontFamily="@font/belleza"
-        android:gravity="center"
-        android:text="Say Thank you 5 times to the first person you see."
-        android:textColor="#FFFDFD"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
     <ImageView
         android:id="@+id/imageView5"
@@ -81,88 +18,143 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/logo" />
 
+    <TextView
+        android:id="@+id/textClock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/belleza"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="60sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView5"
+        tools:text="24 : 00 : 00" />
+
     <LinearLayout
         android:id="@+id/linearLayout"
-        android:layout_width="330dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:animateLayoutChanges="false"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_wrapBehaviorInParent="vertical_only"
-        tools:layout_editor_absoluteY="295dp">
+        app:layout_constraintTop_toBottomOf="@+id/textClock"
+        app:layout_constraintWidth_max="330dp">
 
         <TextView
             android:id="@+id/texttime"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="35dp"
-            android:layout_marginEnd="20dp"
+            android:layout_weight="1"
             android:fontFamily="@font/belleza"
             android:gravity="center"
+            android:text="Hours"
             android:textColor="#FFFFFF"
-            android:textSize="24sp"
-            tools:text="Hours" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/texttime2"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginEnd="20dp"
+            android:layout_weight="1"
             android:fontFamily="@font/belleza"
             android:gravity="center"
+            android:text="Minutes"
             android:textColor="#FFFFFF"
-            android:textSize="24sp"
-            tools:text="Minutes" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/texttime3"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
+            android:layout_weight="1"
             android:fontFamily="@font/belleza"
             android:gravity="center"
+            android:text="Seconds"
             android:textColor="#FFFFFF"
-            android:textSize="24sp"
-            tools:text="Seconds" />
+            android:textSize="18sp" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="24dp"
+        android:fontFamily="@font/belleza"
+        android:gravity="center"
+        android:text="Say Thank you 5 times to the first person you see."
+        android:textColor="#FFFDFD"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        app:layout_constraintWidth_max="400dp" />
 
     <ImageView
         android:id="@+id/imageView6"
         android:layout_width="60dp"
         android:layout_height="57dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView4"
         app:srcCompat="@drawable/g_translate" />
 
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/belleza"
+        android:gravity="center"
+        android:text="Daily Prescript"
+        android:textColor="#FFFDFD"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView6" />
+
+    <Button
+        android:id="@+id/btnreg4"
+        android:layout_width="0dp"
+        android:layout_height="58dp"
+        android:layout_marginStart="38dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="38dp"
+        android:backgroundTint="@color/button_color"
+        android:text="I have completed the prescript."
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView3"
+        app:layout_constraintWidth_max="400dp" />
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="34dp"
-        android:layout_marginEnd="32dp"
+        android:layout_marginTop="24dp"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnreg4">
 
-        <ImageButton
-            android:id="@+id/imageButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+        <ImageView
+            android:id="@+id/imageView7"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             app:srcCompat="@drawable/fire" />
 
         <TextView
             android:id="@+id/textView5"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:fontFamily="@font/belleza"
-            android:gravity="center"
             android:text="1"
             android:textColor="#FFFFFF"
             android:textSize="24sp" />
