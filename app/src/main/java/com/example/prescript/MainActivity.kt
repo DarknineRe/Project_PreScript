@@ -24,11 +24,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -59,7 +55,7 @@ class MainActivity : AppCompatActivity() {
     private val apiKey = BuildConfig.GEMINI_API_KEY
     
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
+        modelName = "models/gemini-2.5-flash",
         apiKey = apiKey
     )
 
@@ -162,7 +158,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        listModels()
         startCountdown()
     }
 
@@ -246,30 +241,6 @@ class MainActivity : AppCompatActivity() {
                 startCountdown()
             }
         }.start()
-    }
-
-    private fun listModels() {
-        lifecycleScope.launch {
-            try {
-                val result = withContext(Dispatchers.IO) {
-                    val client = OkHttpClient()
-                    val request = Request.Builder()
-                        .url("https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey")
-                        .build()
-                    client.newCall(request).execute().use { response ->
-                        val resBody = response.body?.string()
-                        if (!response.isSuccessful) {
-                            "ERROR_CODE_${response.code}: $resBody"
-                        } else {
-                            resBody
-                        }
-                    }
-                }
-                Log.d("MODEL_LIST_RESULT", result ?: "Empty")
-            } catch (e: Exception) {
-                Log.e("MODEL_ERROR", "Error listing models: ${e.message}", e)
-            }
-        }
     }
 
     private fun saveMissionToHistory() {
