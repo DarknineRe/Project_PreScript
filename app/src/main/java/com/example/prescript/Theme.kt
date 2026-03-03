@@ -8,11 +8,13 @@ import android.os.Bundle
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.gridlayout.widget.GridLayout
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseAuth
+import com.example.prescript.R
 
 class Theme : AppCompatActivity() {
     private val selectedThemes = mutableSetOf<String>()
@@ -69,21 +71,24 @@ class Theme : AppCompatActivity() {
 
     private fun setupDynamicButtons() {
         themeList.forEach { themeName ->
-            val button = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonTonalStyle).apply {
+            // Using a standard MaterialButton constructor to avoid R resolution issues with Material attributes
+            val button = MaterialButton(this).apply {
                 text = themeName
                 cornerRadius = 20.dpToPx()
                 isAllCaps = false
-                textSize = 16f
+                textSize = 14f
+                setPadding(8.dpToPx(), 0, 8.dpToPx(), 0)
                 
                 // Layout Params for GridLayout
                 val params = GridLayout.LayoutParams().apply {
                     width = 0
                     height = GridLayout.LayoutParams.WRAP_CONTENT
                     columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                    setMargins(4.dpToPx(), 4.dpToPx(), 4.dpToPx(), 4.dpToPx())
+                    rowSpec = GridLayout.spec(GridLayout.UNDEFINED)
+                    setMargins(8.dpToPx(), 8.dpToPx(), 8.dpToPx(), 8.dpToPx())
                 }
                 
-                // Special case for "Hardcore" to span 2 columns if it's the last one or needs prominence
+                // Special case for "Hardcore" to span 2 columns
                 if (themeName.contains("Hardcore", ignoreCase = true)) {
                     params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 2, 1f)
                 }
@@ -108,11 +113,11 @@ class Theme : AppCompatActivity() {
 
     private fun updateSingleButtonState(button: MaterialButton, themeName: String) {
         if (selectedThemes.contains(themeName)) {
-            button.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#475B74"))
+            button.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.hint_color))
             button.setTextColor(Color.WHITE)
         } else {
-            button.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#E0E1DC"))
-            button.setTextColor(Color.parseColor("#475B74"))
+            button.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.google_button_color))
+            button.setTextColor(ContextCompat.getColor(this, R.color.hint_color))
         }
     }
 
