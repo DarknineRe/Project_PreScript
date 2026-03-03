@@ -6,4 +6,7 @@
     <color name="hint_color">#475B74</color>
     <color name="button_color">#7C8DA5</color>
     <color name="google_button_color">#E0E1DC</color>
+    <color name="orange">#FFA500</color>
+    <color name="blue">#0000FF</color>
+    <color name="purple">#800080</color>
 </resources>

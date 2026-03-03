@@ -1,17 +1,32 @@
 package com.example.prescript
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
+import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import kotlin.random.Random
 
@@ -19,13 +34,27 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var textClock: TextView
     private lateinit var textView4: TextView
-    private var countDownTimer: CountDownTimer? = null
-
-    // Replace with your actual Gemini API Key from https://aistudio.google.com/
-    private val apiKey = "YOUR_API_KEY"
+    private lateinit var streakImage: ImageView
+    private lateinit var streakCountText: TextView
+    private lateinit var btnCompleted: Button
+    private lateinit var drawerLayout: DrawerLayout
     
+    private var countDownTimer: CountDownTimer? = null
+    private var streakCount = 0
+    private var isTaskCompleted = false
+    private var currentSentenceEn: String = ""
+    private var currentSentenceTh: String = ""
+    private var isShowingThai = false
+
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val uid: String? get() = auth.currentUser?.uid
+
+    // Cleaned API Key
+    private val apiKey = "AIzaSyBqPG3GFOZ1UclMkbfh2LEdQtiEMSG4YAo"
+    
+    // Using 'gemini-pro' which is the most compatible name across SDK versions
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
+        modelName = "gemini-pro",
         apiKey = apiKey
     )
 
@@ -42,13 +71,28 @@ class MainActivity : AppCompatActivity() {
         "Declutter one small area of your desk."
     )
 
+    private fun getPrefs() = getSharedPreferences("PreScriptPrefs_$uid", Context.MODE_PRIVATE)
+
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        if (uid == null) {
+            startActivity(Intent(this, Login::class.java))
+            finish()
+            return
+        }
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
+        drawerLayout = findViewById(R.id.drawer_layout)
+        val navView = findViewById<NavigationView>(R.id.nav_view)
         textClock = findViewById(R.id.textClock)
         textView4 = findViewById(R.id.textView4)
+        streakImage = findViewById(R.id.streak_image)
+        streakCountText = findViewById(R.id.streak_count)
+        btnCompleted = findViewById(R.id.btncompleted)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -56,14 +100,118 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        findViewById<ImageView>(R.id.btn_menu).setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        navView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_main -> drawerLayout.closeDrawer(GravityCompat.START)
+                R.id.nav_history -> startActivity(Intent(this, History::class.java))
+                R.id.nav_profile -> startActivity(Intent(this, Profile::class.java))
+            }
+            drawerLayout.closeDrawer(GravityCompat.START)
+            true
+        }
+
+        findViewById<ImageView>(R.id.translate).setOnClickListener {
+            toggleTranslation()
+        }
+
+        val sharedPref = getPrefs()
+        streakCount = sharedPref.getInt("STREAK_COUNT", 0)
+        isTaskCompleted = sharedPref.getBoolean("IS_TASK_COMPLETED", false)
+        currentSentenceEn = sharedPref.getString("CURRENT_SENTENCE_EN", "") ?: ""
+        currentSentenceTh = sharedPref.getString("CURRENT_SENTENCE_TH", "") ?: ""
+        
+        updateStreakUI()
+        
+        if (isTaskCompleted) {
+            btnCompleted.isEnabled = false
+            btnCompleted.text = "Completed for today"
+        }
+
+        if (currentSentenceEn.isEmpty()) {
+            generatePrescriptWithAI()
+        } else {
+            textView4.text = if (isShowingThai && currentSentenceTh.isNotEmpty()) currentSentenceTh else currentSentenceEn
+        }
+
+        btnCompleted.setOnClickListener {
+            if (!isTaskCompleted) {
+                isTaskCompleted = true
+                streakCount++
+                saveStreakData()
+                updateStreakUI()
+                btnCompleted.isEnabled = false
+                btnCompleted.text = "Completed for today"
+                Toast.makeText(this, "Task Completed! Streak: $streakCount", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         startCountdown()
-        generatePrescriptWithAI()
+    }
+
+    private fun toggleTranslation() {
+        if (currentSentenceEn.isEmpty()) return
+
+        if (isShowingThai) {
+            textView4.text = currentSentenceEn
+            isShowingThai = false
+        } else {
+            if (currentSentenceTh.isNotEmpty()) {
+                textView4.text = currentSentenceTh
+                isShowingThai = true
+            } else {
+                translateToThai()
+            }
+        }
+    }
+
+    private fun translateToThai() {
+        lifecycleScope.launch {
+            try {
+                val prompt = "Translate this English task to Thai naturally: '$currentSentenceEn'. Output only the Thai translation."
+                val response = generativeModel.generateContent(prompt)
+                currentSentenceTh = response.text?.trim() ?: ""
+                
+                if (currentSentenceTh.isNotEmpty()) {
+                    getPrefs().edit().putString("CURRENT_SENTENCE_TH", currentSentenceTh).apply()
+                    textView4.text = currentSentenceTh
+                    isShowingThai = true
+                } else {
+                    Toast.makeText(this@MainActivity, "Could not translate", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Translation error: ${e.message}", e)
+                Toast.makeText(this@MainActivity, "Translation Error", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun startCountdown() {
-        val totalTime = 24 * 60 * 60 * 1000L
+        val sharedPref = getPrefs()
+        var endTime = sharedPref.getLong("TIMER_END_TIME", 0L)
+        val currentTime = System.currentTimeMillis()
 
-        countDownTimer = object : CountDownTimer(totalTime, 1000) {
+        if (endTime == 0L || currentTime >= endTime) {
+            if (endTime != 0L) {
+                saveMissionToHistory()
+            }
+            endTime = currentTime + (24 * 60 * 60 * 1000L)
+            sharedPref.edit().putLong("TIMER_END_TIME", endTime).apply()
+            
+            isTaskCompleted = false
+            currentSentenceEn = ""
+            currentSentenceTh = ""
+            saveStreakData()
+            generatePrescriptWithAI()
+        }
+
+        val remainingTime = endTime - currentTime
+
+        countDownTimer?.cancel()
+        countDownTimer = object : CountDownTimer(remainingTime, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val hours = (millisUntilFinished / (1000 * 60 * 60)) % 24
                 val minutes = (millisUntilFinished / (1000 * 60)) % 60
@@ -71,25 +219,82 @@ class MainActivity : AppCompatActivity() {
                 textClock.text = String.format(Locale.getDefault(), "%02d : %02d : %02d", hours, minutes, seconds)
             }
 
+            @SuppressLint("SetTextI18n")
             override fun onFinish() {
-                generatePrescriptWithAI()
+                saveMissionToHistory()
+                if (!isTaskCompleted) streakCount = 0
+                isTaskCompleted = false
+                currentSentenceEn = ""
+                currentSentenceTh = ""
+                saveStreakData()
+                updateStreakUI()
+                btnCompleted.isEnabled = true
+                btnCompleted.text = "I have completed the prescript."
+                getPrefs().edit().putLong("TIMER_END_TIME", 0L).apply()
                 startCountdown()
             }
         }.start()
     }
 
+    private fun saveMissionToHistory() {
+        val sharedPref = getPrefs()
+        val historyJson = sharedPref.getString("MISSION_HISTORY", null)
+        val historyList = if (historyJson != null) {
+            val type = object : TypeToken<MutableList<HistoryItem>>() {}.type
+            Gson().fromJson<MutableList<HistoryItem>>(historyJson, type)
+        } else {
+            mutableListOf<HistoryItem>()
+        }
+
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val date = dateFormat.format(Date())
+        
+        if (currentSentenceEn.isNotEmpty()) {
+            historyList.add(HistoryItem(currentSentenceEn, isTaskCompleted, date))
+            sharedPref.edit().putString("MISSION_HISTORY", Gson().toJson(historyList)).apply()
+        }
+    }
+
+    private fun updateStreakUI() {
+        streakCountText.text = streakCount.toString()
+        val colorRes = if (!isTaskCompleted) R.color.black else {
+            when {
+                streakCount >= 101 -> R.color.purple
+                streakCount >= 11 -> R.color.blue
+                streakCount >= 1 -> R.color.orange
+                else -> R.color.black
+            }
+        }
+        streakImage.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, colorRes))
+    }
+
+    private fun saveStreakData() {
+        val sharedPref = getPrefs()
+        with(sharedPref.edit()) {
+            putInt("STREAK_COUNT", streakCount)
+            putBoolean("IS_TASK_COMPLETED", isTaskCompleted)
+            putString("CURRENT_SENTENCE_EN", currentSentenceEn)
+            putString("CURRENT_SENTENCE_TH", currentSentenceTh)
+            apply()
+        }
+    }
+
     private fun generatePrescriptWithAI() {
-        val sharedPref = getSharedPreferences("PreScriptPrefs", Context.MODE_PRIVATE)
-        val currentTheme = sharedPref.getString("SELECTED_THEME", "General") ?: "General"
+        val sharedPref = getPrefs()
+        val themes = sharedPref.getString("SELECTED_THEMES", "General") ?: "General"
 
         lifecycleScope.launch {
             try {
-                val prompt = "Generate a short, positive, and actionable daily task related to $currentTheme (like 'drink a glass of water' or 'complement a stranger') for a 'Daily Prescript' app. One sentence only."
+                val prompt = "Generate a short, positive, and actionable daily task related to $themes. One sentence only."
                 val response = generativeModel.generateContent(prompt)
-                textView4.text = response.text?.trim() ?: getRandomFallback()
+                currentSentenceEn = response.text?.trim() ?: getRandomFallback()
+                textView4.text = currentSentenceEn
+                saveStreakData()
             } catch (e: Exception) {
-                Log.e("MainActivity", "Error generating AI content", e)
-                textView4.text = getRandomFallback()
+                Log.e("MainActivity", "AI error: ${e.message}", e)
+                currentSentenceEn = getRandomFallback()
+                textView4.text = currentSentenceEn
+                saveStreakData()
             }
         }
     }
