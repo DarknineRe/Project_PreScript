@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1001902874519",
+    "project_id": "prescript-b6ba9",
+    "storage_bucket": "prescript-b6ba9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1001902874519:android:5636b81180f4b34ac3aed2",
+        "android_client_info": {
+          "package_name": "com.example.prescript"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1001902874519-ld4l9p9tfhq3vrtlf5n22p8lr6cpm311.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBe5bYhGZSjCCUk4reYSLs7_vjEg9uRDFE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1001902874519-ld4l9p9tfhq3vrtlf5n22p8lr6cpm311.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
