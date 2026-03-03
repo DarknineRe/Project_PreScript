@@ -14,11 +14,13 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 class History : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,7 +70,8 @@ class History : AppCompatActivity() {
     }
 
     private fun loadHistory(): List<HistoryItem> {
-        val sharedPref = getSharedPreferences("PreScriptPrefs", Context.MODE_PRIVATE)
+        val uid = auth.currentUser?.uid ?: return emptyList()
+        val sharedPref = getSharedPreferences("PreScriptPrefs_$uid", Context.MODE_PRIVATE)
         val historyJson = sharedPref.getString("MISSION_HISTORY", null)
         return if (historyJson != null) {
             val type = object : TypeToken<List<HistoryItem>>() {}.type

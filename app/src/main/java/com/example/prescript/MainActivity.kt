@@ -20,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.RequestOptions
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
@@ -49,12 +50,11 @@ class MainActivity : AppCompatActivity() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val uid: String? get() = auth.currentUser?.uid
 
-    // Cleaned API Key
     private val apiKey = "AIzaSyBqPG3GFOZ1UclMkbfh2LEdQtiEMSG4YAo"
     
-    // Using 'gemini-pro' which is the most compatible name across SDK versions
+    // Updated to remove explicit v1beta which was causing 404 for this model
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-pro",
+        modelName = "gemini-2.5-flash",
         apiKey = apiKey
     )
 
@@ -93,6 +93,14 @@ class MainActivity : AppCompatActivity() {
         streakImage = findViewById(R.id.streak_image)
         streakCountText = findViewById(R.id.streak_count)
         btnCompleted = findViewById(R.id.btncompleted)
+        val logoImage = findViewById<ImageView>(R.id.imageView5)
+
+        logoImage.setOnLongClickListener {
+            Toast.makeText(this, "Dev Mode: Resetting Timer...", Toast.LENGTH_SHORT).show()
+            getPrefs().edit().putLong("TIMER_END_TIME", System.currentTimeMillis() + 1000).apply()
+            startCountdown()
+            true
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -179,12 +187,10 @@ class MainActivity : AppCompatActivity() {
                     getPrefs().edit().putString("CURRENT_SENTENCE_TH", currentSentenceTh).apply()
                     textView4.text = currentSentenceTh
                     isShowingThai = true
-                } else {
-                    Toast.makeText(this@MainActivity, "Could not translate", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Log.e("MainActivity", "Translation error: ${e.message}", e)
-                Toast.makeText(this@MainActivity, "Translation Error", Toast.LENGTH_SHORT).show()
+                Log.e("MainActivity", "Translation Problem: ${e.message}", e)
+                Toast.makeText(this@MainActivity, "Translation failed. Please try again.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -283,20 +289,37 @@ class MainActivity : AppCompatActivity() {
         val sharedPref = getPrefs()
         val themes = sharedPref.getString("SELECTED_THEMES", "General") ?: "General"
 
+        textView4.text = "Generating task..."
+
         lifecycleScope.launch {
             try {
                 val prompt = "Generate a short, positive, and actionable daily task related to $themes. One sentence only."
                 val response = generativeModel.generateContent(prompt)
-                currentSentenceEn = response.text?.trim() ?: getRandomFallback()
-                textView4.text = currentSentenceEn
-                saveStreakData()
+                val aiText = response.text?.trim()
+                
+                if (!aiText.isNullOrEmpty()) {
+                    currentSentenceEn = aiText
+                    currentSentenceTh = ""
+                    isShowingThai = false
+                    textView4.text = currentSentenceEn
+                    saveStreakData()
+                } else {
+                    Log.e("MainActivity", "AI Generation Problem: Empty response")
+                    useFallback()
+                }
             } catch (e: Exception) {
-                Log.e("MainActivity", "AI error: ${e.message}", e)
-                currentSentenceEn = getRandomFallback()
-                textView4.text = currentSentenceEn
-                saveStreakData()
+                Log.e("MainActivity", "AI Generation Problem: ${e.message}", e)
+                useFallback()
             }
         }
+    }
+
+    private fun useFallback() {
+        currentSentenceEn = getRandomFallback()
+        currentSentenceTh = ""
+        isShowingThai = false
+        textView4.text = currentSentenceEn
+        saveStreakData()
     }
 
     private fun getRandomFallback(): String {
