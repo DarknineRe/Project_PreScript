@@ -20,16 +20,21 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.RequestOptions
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.random.Random
+// Explicitly importing BuildConfig to help the IDE resolve it
+import com.example.prescript.BuildConfig
 
 class MainActivity : AppCompatActivity() {
 
@@ -50,11 +55,11 @@ class MainActivity : AppCompatActivity() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val uid: String? get() = auth.currentUser?.uid
 
-    private val apiKey = "AIzaSyBqPG3GFOZ1UclMkbfh2LEdQtiEMSG4YAo"
+    // ApiKey is now retrieved from BuildConfig for security
+    private val apiKey = BuildConfig.GEMINI_API_KEY
     
-    // Updated to remove explicit v1beta which was causing 404 for this model
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-2.5-flash",
+        modelName = "gemini-1.5-flash",
         apiKey = apiKey
     )
 
@@ -157,6 +162,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        listModels()
         startCountdown()
     }
 
@@ -240,6 +246,30 @@ class MainActivity : AppCompatActivity() {
                 startCountdown()
             }
         }.start()
+    }
+
+    private fun listModels() {
+        lifecycleScope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    val client = OkHttpClient()
+                    val request = Request.Builder()
+                        .url("https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey")
+                        .build()
+                    client.newCall(request).execute().use { response ->
+                        val resBody = response.body?.string()
+                        if (!response.isSuccessful) {
+                            "ERROR_CODE_${response.code}: $resBody"
+                        } else {
+                            resBody
+                        }
+                    }
+                }
+                Log.d("MODEL_LIST_RESULT", result ?: "Empty")
+            } catch (e: Exception) {
+                Log.e("MODEL_ERROR", "Error listing models: ${e.message}", e)
+            }
+        }
     }
 
     private fun saveMissionToHistory() {
