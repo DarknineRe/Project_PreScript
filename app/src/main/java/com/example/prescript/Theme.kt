@@ -10,11 +10,34 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.gridlayout.widget.GridLayout
 import com.google.android.material.button.MaterialButton
+import com.google.firebase.auth.FirebaseAuth
 
 class Theme : AppCompatActivity() {
     private val selectedThemes = mutableSetOf<String>()
-    private lateinit var buttons: List<MaterialButton>
+    private lateinit var themeGrid: GridLayout
+    
+    // EASILY ADD NEW THEMES HERE
+    private val themeList = listOf(
+        "⚽ Sports",
+        "🥳 Fun",
+        "💀 Dangerous",
+        "🗓 Daily Task",
+        "🌙 Project Moon Game",
+        "💪 Work out",
+        "🤡 Prank",
+        "🎲 Random",
+        "🎨 Art",
+        "🍳 Cooking",
+        "🧘 Meditation",
+        "🎮 Gaming",
+        "📚 Reading",
+        "🎵 Music",
+        "🚫 Hardcore 🚫"
+    )
+
+    private val themeButtons = mutableListOf<MaterialButton>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,59 +50,79 @@ class Theme : AppCompatActivity() {
             insets
         }
 
-        buttons = listOf(
-            findViewById(R.id.btn_sports),
-            findViewById(R.id.btn_fun),
-            findViewById(R.id.btn_dangerous),
-            findViewById(R.id.btn_daily_task),
-            findViewById(R.id.btn_project_moon),
-            findViewById(R.id.btn_workout),
-            findViewById(R.id.btn_prank),
-            findViewById(R.id.btn_random),
-            findViewById(R.id.btn_hardcore)
-        )
-
-        buttons.forEach { button ->
-            button.setOnClickListener {
-                val themeName = button.text.toString()
-                if (selectedThemes.contains(themeName)) {
-                    selectedThemes.remove(themeName)
-                } else {
-                    selectedThemes.add(themeName)
-                }
-                updateButtonStates()
-            }
-        }
-
-        findViewById<Button>(R.id.btn_finish).setOnClickListener {
-            saveThemesAndFinish()
-        }
-
+        themeGrid = findViewById(R.id.theme_grid)
+        
         // Load previously saved themes
-        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
         val sharedPref = getSharedPreferences("PreScriptPrefs_$uid", Context.MODE_PRIVATE)
         val savedThemesString = sharedPref.getString("SELECTED_THEMES", "") ?: ""
         if (savedThemesString.isNotEmpty()) {
             selectedThemes.addAll(savedThemesString.split(","))
         }
-        updateButtonStates()
-    }
 
-    private fun updateButtonStates() {
-        buttons.forEach { button ->
-            val themeName = button.text.toString()
-            if (selectedThemes.contains(themeName)) {
-                button.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#475B74"))
-                button.setTextColor(Color.WHITE)
-            } else {
-                button.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#E0E1DC"))
-                button.setTextColor(Color.parseColor("#475B74"))
-            }
+        setupDynamicButtons()
+
+        findViewById<Button>(R.id.btn_finish).setOnClickListener {
+            saveThemesAndFinish()
         }
     }
 
+    private fun setupDynamicButtons() {
+        themeList.forEach { themeName ->
+            val button = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonTonalStyle).apply {
+                text = themeName
+                cornerRadius = 20.dpToPx()
+                isAllCaps = false
+                textSize = 16f
+                
+                // Layout Params for GridLayout
+                val params = GridLayout.LayoutParams().apply {
+                    width = 0
+                    height = GridLayout.LayoutParams.WRAP_CONTENT
+                    columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                    setMargins(4.dpToPx(), 4.dpToPx(), 4.dpToPx(), 4.dpToPx())
+                }
+                
+                // Special case for "Hardcore" to span 2 columns if it's the last one or needs prominence
+                if (themeName.contains("Hardcore", ignoreCase = true)) {
+                    params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 2, 1f)
+                }
+                
+                layoutParams = params
+                
+                setOnClickListener {
+                    if (selectedThemes.contains(themeName)) {
+                        selectedThemes.remove(themeName)
+                    } else {
+                        selectedThemes.add(themeName)
+                    }
+                    updateSingleButtonState(this, themeName)
+                }
+            }
+            
+            updateSingleButtonState(button, themeName)
+            themeGrid.addView(button)
+            themeButtons.add(button)
+        }
+    }
+
+    private fun updateSingleButtonState(button: MaterialButton, themeName: String) {
+        if (selectedThemes.contains(themeName)) {
+            button.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#475B74"))
+            button.setTextColor(Color.WHITE)
+        } else {
+            button.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#E0E1DC"))
+            button.setTextColor(Color.parseColor("#475B74"))
+        }
+    }
+
+    private fun Int.dpToPx(): Int {
+        val density = resources.displayMetrics.density
+        return (this * density).toInt()
+    }
+
     private fun saveThemesAndFinish() {
-        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
         val sharedPref = getSharedPreferences("PreScriptPrefs_$uid", Context.MODE_PRIVATE)
         with(sharedPref.edit()) {
             putString("SELECTED_THEMES", selectedThemes.joinToString(","))

@@ -31,128 +31,24 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView4" />
 
-    <androidx.gridlayout.widget.GridLayout
-        android:id="@+id/theme_grid"
+    <ScrollView
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="24dp"
-        app:columnCount="2"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/btn_finish"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView2">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_sports"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="0dp"
+        <androidx.gridlayout.widget.GridLayout
+            android:id="@+id/theme_grid"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="⚽ Sports"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="20dp"
-            app:layout_columnWeight="1" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_fun"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="🥳 Fun"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="20dp"
-            app:layout_columnWeight="1" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_dangerous"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="💀 Dangerous"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="20dp"
-            app:layout_columnWeight="1" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_daily_task"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="🗓 Daily Task"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="20dp"
-            app:layout_columnWeight="1" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_project_moon"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="🌙 Project Moon"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="20dp"
-            app:layout_columnWeight="1" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_workout"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="💪 Work out"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="20dp"
-            app:layout_columnWeight="1" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_prank"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="🤡 Prank"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="20dp"
-            app:layout_columnWeight="1" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_random"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="🎲 Random"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="20dp"
-            app:layout_columnWeight="1" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_hardcore"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="🚫 Hardcore 🚫"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="20dp"
-            app:layout_columnSpan="2"
-            app:layout_columnWeight="1" />
-
-    </androidx.gridlayout.widget.GridLayout>
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            app:columnCount="2" />
+    </ScrollView>
 
     <Button
         android:id="@+id/btn_finish"
