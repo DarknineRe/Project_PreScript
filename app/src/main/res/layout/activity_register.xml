@@ -15,6 +15,18 @@
         android:paddingBottom="24dp">
 
         <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"
+            android:src="@drawable/backspace"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/white" />
+
+        <ImageView
             android:id="@+id/imageView3"
             android:layout_width="133dp"
             android:layout_height="159dp"

@@ -24,6 +24,8 @@ import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -47,6 +49,9 @@ class MainActivity : AppCompatActivity() {
     private var currentSentenceEn: String = ""
     private var currentSentenceTh: String = ""
     private var isShowingThai = false
+    
+    private var revealJob: Job? = null
+    private val shuffleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_@#$&*?<~ "
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val uid: String? get() = auth.currentUser?.uid
@@ -177,21 +182,66 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun startLoadingShuffle(textView: TextView) {
+        revealJob?.cancel()
+        revealJob = lifecycleScope.launch {
+            val length = 25
+            while (true) {
+                val displayed = StringBuilder()
+                repeat(length) {
+                    displayed.append(shuffleChars.random())
+                }
+                textView.text = displayed.toString()
+                delay(40)
+            }
+        }
+    }
+
+    private fun revealText(targetText: String, textView: TextView, onComplete: () -> Unit = {}) {
+        revealJob?.cancel()
+        revealJob = lifecycleScope.launch {
+            var iteration = 0f
+            while (iteration < targetText.length) {
+                val displayed = StringBuilder()
+                for (i in targetText.indices) {
+                    if (i < iteration) {
+                        displayed.append(targetText[i])
+                    } else if (targetText[i] == '\n') {
+                        displayed.append('\n')
+                    } else {
+                        displayed.append(shuffleChars.random())
+                    }
+                }
+                textView.text = displayed.toString()
+                iteration += 0.6f
+                delay(20)
+            }
+            textView.text = targetText
+            onComplete()
+        }
+    }
+
     private fun translateToThai() {
+        startLoadingShuffle(textView4)
         lifecycleScope.launch {
             try {
                 val prompt = "Translate this English task to Thai naturally: '$currentSentenceEn'. Output only the Thai translation."
                 val response = generativeModel.generateContent(prompt)
-                currentSentenceTh = response.text?.trim() ?: ""
+                val fullTranslation = response.text?.trim() ?: ""
                 
-                if (currentSentenceTh.isNotEmpty()) {
+                if (fullTranslation.isNotEmpty()) {
+                    currentSentenceTh = fullTranslation
                     getPrefs().edit().putString("CURRENT_SENTENCE_TH", currentSentenceTh).apply()
-                    textView4.text = currentSentenceTh
-                    isShowingThai = true
+                    revealText(currentSentenceTh, textView4) {
+                        isShowingThai = true
+                    }
+                } else {
+                    textView4.text = currentSentenceEn
                 }
             } catch (e: Exception) {
                 Log.e("MainActivity", "Translation Problem: ${e.message}", e)
                 Toast.makeText(this@MainActivity, "Translation failed. Please try again.", Toast.LENGTH_SHORT).show()
+                textView4.text = currentSentenceEn
             }
         }
     }
@@ -288,22 +338,27 @@ class MainActivity : AppCompatActivity() {
 
     private fun generatePrescriptWithAI() {
         val sharedPref = getPrefs()
-        val themes = sharedPref.getString("SELECTED_THEMES", "General") ?: "General"
+        val themesString = sharedPref.getString("SELECTED_THEMES", "General") ?: "General"
+        
+        // Split the comma-separated string and pick a random theme
+        val themesList = themesString.split(",").filter { it.isNotBlank() }
+        val selectedTheme = if (themesList.isNotEmpty()) themesList.random() else "General"
 
-        textView4.text = "Generating task..."
+        startLoadingShuffle(textView4)
 
         lifecycleScope.launch {
             try {
-                val prompt = "Generate a short, positive, and actionable daily task related to $themes. One sentence only."
+                val prompt = "Generate a short, positive, and actionable daily task related to $selectedTheme. One sentence only."
                 val response = generativeModel.generateContent(prompt)
-                val aiText = response.text?.trim()
+                val fullText = response.text?.trim() ?: ""
                 
-                if (!aiText.isNullOrEmpty()) {
-                    currentSentenceEn = aiText
+                if (fullText.isNotEmpty()) {
+                    currentSentenceEn = fullText
                     currentSentenceTh = ""
                     isShowingThai = false
-                    textView4.text = currentSentenceEn
-                    saveStreakData()
+                    revealText(currentSentenceEn, textView4) {
+                        saveStreakData()
+                    }
                 } else {
                     Log.e("MainActivity", "AI Generation Problem: Empty response")
                     useFallback()
@@ -319,8 +374,9 @@ class MainActivity : AppCompatActivity() {
         currentSentenceEn = getRandomFallback()
         currentSentenceTh = ""
         isShowingThai = false
-        textView4.text = currentSentenceEn
-        saveStreakData()
+        revealText(currentSentenceEn, textView4) {
+            saveStreakData()
+        }
     }
 
     private fun getRandomFallback(): String {
