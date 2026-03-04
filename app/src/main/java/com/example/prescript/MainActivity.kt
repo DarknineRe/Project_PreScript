@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.media.AudioAttributes
+import android.media.SoundPool
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
@@ -53,6 +55,10 @@ class MainActivity : AppCompatActivity() {
     private var revealJob: Job? = null
     private val shuffleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_@#$&*?<~ "
 
+    private lateinit var soundPool: SoundPool
+    private var shuffleSoundId: Int = 0
+    private var soundLoaded = false
+
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val uid: String? get() = auth.currentUser?.uid
 
@@ -60,7 +66,7 @@ class MainActivity : AppCompatActivity() {
     private val apiKey = BuildConfig.GEMINI_API_KEY
     
     private val generativeModel = GenerativeModel(
-        modelName = "models/gemini-2.5-flash",
+        modelName = "models/gemini-3.1-flash-lite-preview",
         apiKey = apiKey
     )
 
@@ -91,6 +97,27 @@ class MainActivity : AppCompatActivity() {
 
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+
+        // Initialize SoundPool for the shuffle animation
+        val audioAttributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_GAME) // Changed to GAME to use media volume
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+        soundPool = SoundPool.Builder()
+            .setMaxStreams(1)
+            .setAudioAttributes(audioAttributes)
+            .build()
+
+        // Load the sound. Ensure you have shuffle_sound.mp3 in res/raw
+        shuffleSoundId = soundPool.load(this, R.raw.shuffle_sound, 1)
+        soundPool.setOnLoadCompleteListener { _, _, status ->
+            if (status == 0) {
+                soundLoaded = true
+                Log.d("MainActivity", "Sound loaded successfully")
+            } else {
+                Log.e("MainActivity", "Sound failed to load with status: $status")
+            }
+        }
 
         drawerLayout = findViewById(R.id.drawer_layout)
         val navView = findViewById<NavigationView>(R.id.nav_view)
@@ -148,7 +175,8 @@ class MainActivity : AppCompatActivity() {
         if (currentSentenceEn.isEmpty()) {
             generatePrescriptWithAI()
         } else {
-            textView4.text = if (isShowingThai && currentSentenceTh.isNotEmpty()) currentSentenceTh else currentSentenceEn
+            val textToDisplay = if (isShowingThai && currentSentenceTh.isNotEmpty()) currentSentenceTh else currentSentenceEn
+            revealText(textToDisplay, textView4)
         }
 
         btnCompleted.setOnClickListener {
@@ -170,11 +198,11 @@ class MainActivity : AppCompatActivity() {
         if (currentSentenceEn.isEmpty()) return
 
         if (isShowingThai) {
-            textView4.text = currentSentenceEn
+            revealText(currentSentenceEn, textView4)
             isShowingThai = false
         } else {
             if (currentSentenceTh.isNotEmpty()) {
-                textView4.text = currentSentenceTh
+                revealText(currentSentenceTh, textView4)
                 isShowingThai = true
             } else {
                 translateToThai()
@@ -186,13 +214,25 @@ class MainActivity : AppCompatActivity() {
         revealJob?.cancel()
         revealJob = lifecycleScope.launch {
             val length = 25
-            while (true) {
-                val displayed = StringBuilder()
-                repeat(length) {
-                    displayed.append(shuffleChars.random())
+            var streamId = 0
+            if (soundLoaded) {
+                // Play sound in loop during generation
+                streamId = soundPool.play(shuffleSoundId, 1.0f, 1.0f, 1, -1, 1f)
+            } else {
+                Log.w("MainActivity", "Sound not loaded yet for startLoadingShuffle")
+            }
+            try {
+                while (true) {
+                    val displayed = StringBuilder()
+                    repeat(length) {
+                        displayed.append(shuffleChars.random())
+                    }
+                    textView.text = displayed.toString()
+                    delay(40)
                 }
-                textView.text = displayed.toString()
-                delay(40)
+            } finally {
+                // Stop sound loop when generation finishes
+                if (streamId != 0) soundPool.stop(streamId)
             }
         }
     }
@@ -201,20 +241,32 @@ class MainActivity : AppCompatActivity() {
         revealJob?.cancel()
         revealJob = lifecycleScope.launch {
             var iteration = 0f
-            while (iteration < targetText.length) {
-                val displayed = StringBuilder()
-                for (i in targetText.indices) {
-                    if (i < iteration) {
-                        displayed.append(targetText[i])
-                    } else if (targetText[i] == '\n') {
-                        displayed.append('\n')
-                    } else {
-                        displayed.append(shuffleChars.random())
+            var streamId = 0
+            if (soundLoaded) {
+                // Play sound in loop during reveal
+                streamId = soundPool.play(shuffleSoundId, 1.0f, 1.0f, 1, -1, 1.2f)
+            } else {
+                Log.w("MainActivity", "Sound not loaded yet for revealText")
+            }
+            try {
+                while (iteration < targetText.length) {
+                    val displayed = StringBuilder()
+                    for (i in targetText.indices) {
+                        if (i < iteration) {
+                            displayed.append(targetText[i])
+                        } else if (targetText[i] == '\n') {
+                            displayed.append('\n')
+                        } else {
+                            displayed.append(shuffleChars.random())
+                        }
                     }
+                    textView.text = displayed.toString()
+                    iteration += 0.6f
+                    delay(20)
                 }
-                textView.text = displayed.toString()
-                iteration += 0.6f
-                delay(20)
+            } finally {
+                // Stop sound loop when reveal finishes
+                if (streamId != 0) soundPool.stop(streamId)
             }
             textView.text = targetText
             onComplete()
@@ -386,5 +438,7 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         countDownTimer?.cancel()
+        // Release sound resources
+        soundPool.release()
     }
 }
