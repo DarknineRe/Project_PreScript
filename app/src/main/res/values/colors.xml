@@ -9,4 +9,27 @@
     <color name="orange">#FFA500</color>
     <color name="blue">#0000FF</color>
     <color name="purple">#800080</color>
+
+    <!-- Light Theme Colors -->
+    <color name="light_background">#F5F5F5</color>
+    <color name="light_text">#212121</color>
+    <color name="light_button">#BBDEFB</color>
+
+    <!-- New theme color -->
+    <color name="light_blue_background">#ADD8E6</color>
+    <color name="light_blue_text">#00008B</color>
+    <color name="light_blue_button">#87CEEB</color>
+
+    <!-- History Activity Colors -->
+    <color name="good_count">#4CAF50</color>
+    <color name="bad_count">#F44336</color>
+    <color name="good_count_light">#2E7D32</color>
+    <color name="bad_count_light">#D32F2F</color>
+
+    <!-- New colors for History activity cards and items -->
+    <color name="history_card_background_dark">#29364B</color>
+    <color name="history_card_background_light">#E0E0E0</color>
+    <color name="history_card_background_lightblue">#A0D4EE</color>
+    <color name="history_item_text_dark">#E0E0E0</color>
+    <color name="history_item_text_light">#424242</color>
 </resources>

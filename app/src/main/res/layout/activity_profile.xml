@@ -51,7 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:fontFamily="@font/belleza"
-            android:text="Avatar (Click to upload)"
+            android:text="Avatar"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="@+id/avatar_image"
@@ -63,7 +63,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="24dp"
             android:fontFamily="@font/belleza"
             android:text="Email :"
             android:textColor="#FFFFFF"
@@ -89,7 +89,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="16dp"
             android:fontFamily="@font/belleza"
             android:text="Username :"
             android:textColor="#FFFFFF"
@@ -114,7 +114,7 @@
             android:id="@+id/btn_change_username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
+            android:layout_marginStart="16dp"
             android:backgroundTint="#FFFFFF"
             android:minHeight="0dp"
             android:paddingHorizontal="8dp"
@@ -127,26 +127,89 @@
             app:layout_constraintStart_toEndOf="@+id/tv_username_value"
             app:layout_constraintTop_toTopOf="@+id/tv_username_value" />
 
+        <LinearLayout
+            android:id="@+id/bg_theme_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="32dp"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@+id/tv_username_label">
+
+            <TextView
+                android:id="@+id/tv_theme_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/belleza"
+                android:text="Background Theme :"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+            <RadioGroup
+                android:id="@+id/rg_bg_theme"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rb_dark"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="#FFFFFF"
+                    android:fontFamily="@font/belleza"
+                    android:text="Dark"
+                    android:textColor="#FFFFFF" />
+
+                <RadioButton
+                    android:id="@+id/rb_light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:buttonTint="#FFFFFF"
+                    android:fontFamily="@font/belleza"
+                    android:text="Light"
+                    android:textColor="#FFFFFF" />
+            </RadioGroup>
+        </LinearLayout>
+
         <Button
             android:id="@+id/btn_edit_theme"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:layout_marginTop="48dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="32dp"
             android:backgroundTint="#E0E1DC"
-            android:text="Edit Theme"
+            android:text="Edit Mission Theme"
             android:textAllCaps="false"
             android:textColor="#475B74"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_username_label" />
+            app:layout_constraintTop_toBottomOf="@+id/bg_theme_container" />
+
+        <Button
+            android:id="@+id/btn_ai_settings"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="32dp"
+            android:backgroundTint="#E0E1DC"
+            android:text="AI Settings"
+            android:textAllCaps="false"
+            android:textColor="#475B74"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btn_edit_theme" />
 
         <Button
             android:id="@+id/btn_logout"
             android:layout_width="0dp"
-            android:layout_height="70dp"
+            android:layout_height="60dp"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
             android:layout_marginBottom="32dp"
@@ -160,6 +223,15 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageView
+            android:id="@+id/imageView6"
+            android:layout_width="33dp"
+            android:layout_height="28dp"
+            android:background="#29575252"
+            android:src="@drawable/camera"
+            app:layout_constraintBottom_toBottomOf="@+id/avatar_image"
+            app:layout_constraintEnd_toEndOf="@+id/avatar_image" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

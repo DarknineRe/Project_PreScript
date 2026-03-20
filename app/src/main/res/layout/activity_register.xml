@@ -181,7 +181,7 @@
             android:backgroundTint="@color/google_button_color"
             android:text="Register with Google"
             android:textColor="@color/black"
-            app:icon="@drawable/lock"
+            app:icon="@drawable/google"
             app:iconGravity="textStart"
             app:iconPadding="8dp"
             app:iconTint="@color/hint_color"
